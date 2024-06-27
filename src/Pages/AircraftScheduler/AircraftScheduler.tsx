@@ -2,73 +2,16 @@
 import MyButton from "@/Components/MyButton/MyButton";
 import { Box, Button, List, ListItem, ListSubheader } from "@mui/material";
 import { useEffect, useState } from "react";
-
-interface IAircraftDataItem {
-  ident: string;
-  economySeats: number;
-  base: string;
-  type: string;
-}
-interface IFlightDataItem {
-  arrivaltime: number;
-  departuretime: number;
-  destination: string;
-  ident: string;
-  origin: string;
-  readable_arrival: string;
-  readable_departure: string;
-}
+import { useAircraftScheduler } from "./useAircraftScheduler";
 
 export default function AircraftSceduler() {
-  const [allAircraft, setAllAircraft] = useState<IAircraftDataItem[]>([]);
-  const [allFlights, setAllFlights] = useState<IFlightDataItem[]>([]);
-  const [allAircraftFlights, setAllAircraftFlights] = useState<
-    IFlightDataItem[]
-  >([]);
-  const [currentAircraft, setCurrentAircraft] = useState<number>(-1);
-
-  useEffect(() => {
-    getAircraftData();
-    getFlightData();
-  }, []);
-
-  const getAircraftData = () => {
-    fetch("https://recruiting-assessment.alphasights.com/api/aircrafts")
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        // console.log("Aircraft:", data);
-        setAllAircraft(data);
-      });
-  };
-
-  const getFlightData = () => {
-    const myData = fetch(
-      "https://recruiting-assessment.alphasights.com/api/flights"
-    )
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        // console.log("Flights:", data);
-        setAllFlights(data);
-      });
-  };
-
-  const onSelectAircraft = (index: number) => {
-    const filteredFlights = allFlights.filter(
-      (el) => el.ident === allAircraft[index].ident
-    );
-    console.log("Filtered Flights:", filteredFlights)
-    setCurrentAircraft(index);
-    setAllAircraftFlights(filteredFlights);
-  };
-
-  const onDeselectAircraft = () => {
-    setCurrentAircraft(-1);
-    setAllAircraftFlights([]);
-  };
+  const {
+    currentAircraft,
+    allAircraft,
+    allFlights,
+    onSelectAircraft,
+    onDeselectAircraft,
+  } = useAircraftScheduler();
 
   return (
     <main className="text-center grow items-center">
@@ -84,7 +27,7 @@ export default function AircraftSceduler() {
         }}
         className="p-8"
       >
-        <Box className="border-solid border-2 border-white rounded-xl">
+        <Box className="border-solid border-2 border-white rounded-xl max-h-[70vh] overflow-x-hidden overflow-scroll">
           {allAircraft.length > 0 && (
             <List>
               <ListSubheader className="bg-inherit text-base text-white">
@@ -131,18 +74,54 @@ export default function AircraftSceduler() {
             </List>
           )}
         </Box>
-        <Box className="border-solid border-2 border-white rounded-xl">
+        <Box className="border-solid border-2 border-white rounded-xl max-h-[70vh] overflow-x-hidden overflow-scroll">
           <List>
             <ListSubheader className="bg-inherit text-base text-white">
               Flight Rotation
             </ListSubheader>
           </List>
         </Box>
-        <Box className="border-solid border-2 border-white rounded-xl">
+        <Box className="border-solid border-2 border-white rounded-xl max-h-[70vh] overflow-x-hidden overflow-scroll">
           <List>
             <ListSubheader className="bg-inherit text-base text-white">
               Flights
             </ListSubheader>
+            {allFlights.map((el, i) => {
+              return (
+                <ListItem key={``} className="">
+                  <MyButton variant="outlined" className="w-full">
+                    <Box
+                      sx={{
+                        display: "grid",
+                        columnGap: 3,
+                        rowGap: 1,
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                      }}
+                    >
+                      <div>
+                        Aircraft ID: <b>{el.ident}</b>
+                      </div>
+                      <div></div>
+                      <div></div>
+                      <div>
+                        <b>{el.origin}</b>
+                      </div>
+                      <div>{`--->`}</div>
+                      <div>
+                        <b>{el.destination}</b>
+                      </div>
+                      <div>
+                        <b>{el.readable_departure}</b>
+                      </div>
+                      <div></div>
+                      <div>
+                        <b>{el.readable_arrival}</b>
+                      </div>
+                    </Box>
+                  </MyButton>
+                </ListItem>
+              );
+            })}
           </List>
         </Box>
       </Box>
