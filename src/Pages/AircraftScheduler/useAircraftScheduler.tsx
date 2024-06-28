@@ -67,7 +67,6 @@ export const useAircraftScheduler = () => {
     );
     console.log("Filtered Flights:", filteredFlights);
     setCurrentAircraft(index);
-    // setAllAircraftFlights(filteredFlights);
   };
 
   const onDeselectAircraft = () => {
@@ -78,19 +77,29 @@ export const useAircraftScheduler = () => {
   const onSelectFlight = (flight: IFlightDataItem) => {
     const newRotation = [...flightRotation, flight];
     const turnaroundTime = 1200; // 20min in seconds
-
+  
     let hasOverlap = false;
+  
+    // Sort flights by departure time
+    newRotation.sort((a, b) => a.departuretime - b.departuretime);
+  
     for (let i = 1; i < newRotation.length; i++) {
       const previousFlightEndTime =
         newRotation[i - 1].arrivaltime + turnaroundTime;
       const currentFlightDepartureTime = newRotation[i].departuretime;
-      if (currentFlightDepartureTime <= previousFlightEndTime) {
+  
+      // Check if there's a gap before this flight
+      if (
+        currentFlightDepartureTime <= previousFlightEndTime ||
+        (i > 1 &&
+          currentFlightDepartureTime - (newRotation[i - 2].arrivaltime + turnaroundTime) < turnaroundTime)
+      ) {
         hasOverlap = true;
         setSnackOpen(true);
         break;
       }
     }
-
+  
     if (!hasOverlap) {
       setFlightRotation(newRotation);
     }

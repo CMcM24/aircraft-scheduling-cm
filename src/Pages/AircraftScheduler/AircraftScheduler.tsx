@@ -99,12 +99,11 @@ export default function AircraftSceduler() {
               </ListSubheader>
               {flightRotation.map((el, i) => {
                 return (
-                  <ListItem key={`flight-${i}`} className="">
+                  <ListItem key={`flight-${i}`} className="flex">
                     <MyButton
                       variant="contained"
                       className="w-full text-white"
                       color="success"
-                      onClick={() => onDeselectFlight(el)}
                     >
                       <Box
                         sx={{
@@ -134,6 +133,14 @@ export default function AircraftSceduler() {
                           <b>{el.readable_arrival}</b>
                         </div>
                       </Box>
+                    </MyButton>
+                    <MyButton
+                      color="error"
+                      variant="outlined"
+                      className="ml-2"
+                      onClick={() => onDeselectFlight(el)}
+                    >
+                      <Typography variant="h5">X</Typography>
                     </MyButton>
                   </ListItem>
                 );
