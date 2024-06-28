@@ -20,38 +20,45 @@ export interface IFlightDataItem {
 export const useAircraftScheduler = () => {
   const [allAircraft, setAllAircraft] = useState<IAircraftDataItem[]>([]);
   const [allFlights, setAllFlights] = useState<IFlightDataItem[]>([]);
-  const [allAircraftFlights, setAllAircraftFlights] = useState<
-    IFlightDataItem[]
-  >([]);
+  const [filteredFlights, setFilteredFlights] = useState<IFlightDataItem[]>([]);
+  const [flightRotation, setFlightRotation] = useState<IFlightDataItem[]>([]);
   const [currentAircraft, setCurrentAircraft] = useState<number>(-1);
+  const [snackOpen, setSnackOpen] = useState(false);
 
   useEffect(() => {
     getAircraftData();
     getFlightData();
   }, []);
 
-  const getAircraftData = () => {
-    fetch("https://recruiting-assessment.alphasights.com/api/aircrafts")
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        // console.log("Aircraft:", data);
-        setAllAircraft(data);
-      });
+  const getAircraftData = async () => {
+    try {
+      const res = await fetch(
+        "https://recruiting-assessment.alphasights.com/api/aircrafts"
+      );
+      if (!res.ok) {
+        throw new Error(`Fetch Error: ${res.status}`);
+      }
+      const data = await res.json();
+      setAllAircraft([data[0]]); // "Only one aircraft is to be supported", from prompt.
+    } catch (error) {
+      console.error("Error fetching aircraft data:", error);
+    }
   };
 
-  const getFlightData = () => {
-    const myData = fetch(
-      "https://recruiting-assessment.alphasights.com/api/flights"
-    )
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        // console.log("Flights:", data);
-        setAllFlights(data);
-      });
+  const getFlightData = async () => {
+    try {
+      const res = await fetch(
+        "https://recruiting-assessment.alphasights.com/api/flights"
+      );
+      if (!res.ok) {
+        throw new Error(`Fetch Error: ${res.status}`);
+      }
+      const data = await res.json();
+      setAllFlights(data);
+      setFilteredFlights(data);
+    } catch (error) {
+      console.error("Error fetching flight data:", error);
+    }
   };
 
   const onSelectAircraft = (index: number) => {
@@ -65,11 +72,40 @@ export const useAircraftScheduler = () => {
 
   const onDeselectAircraft = () => {
     setCurrentAircraft(-1);
-    setAllAircraftFlights([]);
+    setFilteredFlights(allFlights);
   };
 
-  const caluculateTimePercent = (utcVal: number) => {
-    return (utcVal / 86400) * 100; //86400 is 24hrs in seconds
+  const onSelectFlight = (flight: IFlightDataItem) => {
+    const newRotation = [...flightRotation, flight];
+    const turnaroundTime = 1200; // 20min in seconds
+
+    let hasOverlap = false;
+    for (let i = 1; i < newRotation.length; i++) {
+      const previousFlightEndTime =
+        newRotation[i - 1].arrivaltime + turnaroundTime;
+      const currentFlightDepartureTime = newRotation[i].departuretime;
+      if (currentFlightDepartureTime <= previousFlightEndTime) {
+        hasOverlap = true;
+        setSnackOpen(true);
+        break;
+      }
+    }
+
+    if (!hasOverlap) {
+      setFlightRotation(newRotation);
+    }
+  };
+
+  const onDeselectFlight = (flight: IFlightDataItem) => {
+    if (flightRotation.length === 1) {
+      setFlightRotation([]);
+      setFilteredFlights(allFlights);
+      return;
+    }
+    const newRotation = [...flightRotation];
+    const flightIndex = flightRotation.indexOf(flight);
+    newRotation.splice(flightIndex, 1);
+    setFlightRotation(newRotation);
   };
 
   return {
@@ -79,10 +115,15 @@ export const useAircraftScheduler = () => {
     setAllAircraft,
     allFlights,
     setAllFlights,
-    allAircraftFlights,
-    setAllAircraftFlights,
+    allAircraftFlights: filteredFlights,
+    setAllAircraftFlights: setFilteredFlights,
     onSelectAircraft,
     onDeselectAircraft,
-    caluculateTimePercent,
+    onSelectFlight,
+    onDeselectFlight,
+    filteredFlights,
+    flightRotation,
+    snackOpen,
+    setSnackOpen,
   };
 };
