@@ -121,7 +121,9 @@ const FlightTimeline = ({ flightData }: { flightData: IFlightDataItem[] }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div>Total Aircraft Usage (in Percent): {aircraftUsageTotal}%</div>
+      <div>
+        Total Aircraft Usage (in Percent): <>{aircraftUsageTotal}%</>
+      </div>
       <canvas
         ref={canvasRef}
         width={1000}
