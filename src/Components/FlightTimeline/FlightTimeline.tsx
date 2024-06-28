@@ -1,5 +1,5 @@
 import { IFlightDataItem } from "@/Pages/AircraftScheduler/useAircraftScheduler";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ColorSection {
   startPercentage: number;
@@ -9,6 +9,8 @@ interface ColorSection {
 
 const FlightTimeline = ({ flightData }: { flightData: IFlightDataItem[] }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [aircraftUsageTotal, setAircraftUsageTotal] = useState<Number>(0);
 
   useEffect(() => {
     buildSections();
@@ -20,13 +22,21 @@ const FlightTimeline = ({ flightData }: { flightData: IFlightDataItem[] }) => {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let totalAircraftUsage = 0;
         const colorCodedFlights = flightData.map((el) => {
+          const totalFlightAndTurnaround = Math.abs(
+            el.arrivaltime - el.departuretime + 1200
+          );
+          totalAircraftUsage += totalFlightAndTurnaround;
+          const startPercentage = calculateTimePercent(el.departuretime);
+          const endPercentage = calculateTimePercent(el.arrivaltime);
           return {
-            startPercentage: calculateTimePercent(el.departuretime),
-            endPercentage: calculateTimePercent(el.arrivaltime),
+            startPercentage,
+            endPercentage,
             color: "#22C55E",
           };
         });
+        setAircraftUsageTotal(Math.round((totalAircraftUsage / 86400) * 100));
 
         let sectionData: ColorSection[] = [];
         for (let i = 0; i < colorCodedFlights.length; i++) {
@@ -111,6 +121,7 @@ const FlightTimeline = ({ flightData }: { flightData: IFlightDataItem[] }) => {
 
   return (
     <div className="flex flex-col items-center">
+      <div>Total Aircraft Usage (in Percent): {aircraftUsageTotal}%</div>
       <canvas
         ref={canvasRef}
         width={1000}

@@ -33,6 +33,8 @@ export default function AircraftSceduler() {
       <main className="text-center grow items-center">
         <Box className="grow h-20 text-white items-center">
           <Typography variant="h3">Aircraft Scheduler</Typography>
+        </Box><Box>
+            <Typography variant="body2">Choose an aircraft, then choose your flights and add them to the 24 hour rotation.</Typography>
         </Box>
         <Box
           sx={{
