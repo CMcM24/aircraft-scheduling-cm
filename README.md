@@ -7,7 +7,7 @@ This project is created using React and TypeScript. Material UI (a React Compone
 
 ## Getting Started
 
-To run this project, please made sure you have an upt-to-date version of Node.js.
+To run this project, please made sure you have an up-to-date version of Node.js.
 
 run "npm install" to install all dependencies.
 
